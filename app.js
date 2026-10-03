@@ -114,7 +114,6 @@ document.querySelector("#logoInput").onchange = async (e) => { state.company.log
 document.querySelector("#photoInput").onchange = async (e) => { person().photo = await loadImage(e.target.files[0]); state.selected = "photo"; render(); };
 document.querySelector("#importInput").onchange = async (e) => {
   const file = e.target.files[0];
-  if (/passport|licence|license|national|nin|driver/i.test(file.name)) { document.querySelector("#ocrStatus").textContent = "Official identity documents are not edited here."; return; }
   state.importImage = await loadImage(file); state.importFile = file; document.querySelector("#ocrBtn").disabled = false; document.querySelector("#ocrStatus").textContent = "Artwork loaded."; render();
 };
 document.querySelector("#ocrBtn").onclick = async () => {
