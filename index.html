@@ -3,40 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>G&G Wizard Editx — Staff ID desk</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,620&family=Outfit:wght@400;500;600&display=swap" />
+  <title>G&G Wizard Editx</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560&family=Outfit:wght@400;600&display=swap" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <header class="mast">
-    <div class="brand">
-      <span class="mono">G&G</span>
-      <div>
-        <strong>Wizard Editx</strong>
-        <em>Staff ID desk for print</em>
-      </div>
-    </div>
-    <div class="skill-row">
-      <span>exact-font-ocr-edit</span>
-      <span>exact-photo-swap</span>
-    </div>
+    <div class="brand"><span class="mono">G&G</span><div><strong>Wizard Editx</strong><em>Card desk for print</em></div></div>
+    <div class="skill-row"><span>exact-font-ocr-edit</span><span>exact-photo-swap</span><span>clean-upscale</span></div>
     <div class="mast-actions">
-      <button type="button" id="exportPng">Export print PNG</button>
-      <button type="button" id="exportSheet" class="ghost">Batch sheet</button>
+      <button type="button" id="exportPng">Export 300 dpi</button>
+      <button type="button" id="exportUp" class="ghost">Clean 2× upscale</button>
     </div>
   </header>
-
-  <div class="notice">Company staff access cards only. Design here, then send the 300 dpi PNG to your card manufacturer. This is not a government ID.</div>
-
+  <div class="notice">Organization cards you design: staff, visitor, contractor, member, event, campus. Not for altering a government ID, passport, or driver licence.</div>
   <main>
     <aside class="rail">
       <section>
         <h2>Card</h2>
+        <label>Kind
+          <select id="kind">
+            <option value="staff">Staff access</option>
+            <option value="visitor">Visitor</option>
+            <option value="contractor">Contractor</option>
+            <option value="member">Member</option>
+            <option value="event">Event</option>
+            <option value="campus">Campus</option>
+          </select>
+        </label>
         <label>Format
           <select id="format">
-            <option value="cr80-land">CR80 landscape · 85.6 × 54 mm</option>
-            <option value="cr80-port">CR80 portrait · 54 × 85.6 mm</option>
+            <option value="cr80-land">CR80 landscape</option>
+            <option value="cr80-port">CR80 portrait</option>
           </select>
         </label>
         <label>Template
@@ -48,58 +46,37 @@
           </select>
         </label>
         <label>Side
-          <select id="side">
-            <option value="front">Front</option>
-            <option value="back">Back</option>
-          </select>
+          <select id="side"><option value="front">Front</option><option value="back">Back</option></select>
         </label>
       </section>
       <section>
-        <h2>Company</h2>
+        <h2>Issuer</h2>
         <label>Name <input id="companyName" value="Northline Facilities" /></label>
-        <label>Tagline <input id="companyTag" value="Staff access" /></label>
-        <label>Brand color <input id="brandColor" type="color" value="#2f4634" /></label>
-        <label class="file">Logo
-          <input id="logoInput" type="file" accept="image/*" />
-        </label>
+        <label>Line <input id="companyTag" value="Staff access" /></label>
+        <label>Color <input id="brandColor" type="color" value="#2f4634" /></label>
+        <label class="file">Logo <input id="logoInput" type="file" accept="image/*" /></label>
       </section>
       <section>
-        <h2>Staff roster</h2>
+        <h2>People</h2>
         <div id="roster"></div>
-        <button type="button" id="addStaff" class="ghost">Add staff</button>
+        <button type="button" id="addStaff" class="ghost">Add person</button>
       </section>
     </aside>
-
     <section class="stage">
-      <div class="stage-bar">
-        <span id="stageLabel">CR80 · 300 dpi</span>
-        <span id="frameLabel">Photo frame unlocked</span>
-      </div>
-      <div class="board">
-        <canvas id="card" width="1012" height="638"></canvas>
-      </div>
-      <p class="fine">Drag a block to place it. The photo skill pastes a replacement into the frame at the same pixel size. The font skill keeps size, weight, and color when you rewrite a line.</p>
+      <div class="stage-bar"><span id="stageLabel">CR80</span><span id="frameLabel"></span></div>
+      <div class="board"><canvas id="card" width="1012" height="638"></canvas></div>
     </section>
-
     <aside class="desk">
+      <section><h2>Selected</h2><div id="inspector" class="empty">Select a block on the card.</div></section>
       <section>
-        <h2>Selected</h2>
-        <div id="inspector" class="empty">Select a block on the card.</div>
+        <h2>Photo <span>exact-photo-swap</span></h2>
+        <p id="photoMeta" class="meta"></p>
+        <label class="file">Upload replacement <input id="photoInput" type="file" accept="image/*" /></label>
       </section>
       <section>
-        <h2>Photo frame <span>exact-photo-swap</span></h2>
-        <p id="photoMeta" class="meta">The portrait frame is a fixed box. A new upload is cover-cropped to that exact width and height.</p>
-        <label class="file">Upload replacement
-          <input id="photoInput" type="file" accept="image/*" />
-        </label>
-        <button type="button" id="drawFrame" class="ghost">Redraw frame</button>
-      </section>
-      <section>
-        <h2>Import artwork <span>exact-font-ocr-edit</span></h2>
-        <p class="meta">Open an existing card. Words are captured with color and size, then rewritten in the same box.</p>
-        <label class="file">Open card image
-          <input id="importInput" type="file" accept="image/*" />
-        </label>
+        <h2>Artwork <span>exact-font-ocr-edit</span></h2>
+        <p class="meta">Import a card you designed. Words keep their box, size, and color. Official government documents are refused.</p>
+        <label class="file">Open image <input id="importInput" type="file" accept="image/*" /></label>
         <button type="button" id="ocrBtn" class="ghost" disabled>Capture words</button>
         <p id="ocrStatus" class="meta"></p>
       </section>

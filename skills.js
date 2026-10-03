@@ -1,52 +1,45 @@
-/* Injected skills. Browser ports of exact-font-ocr-edit and exact-photo-swap. */
 window.GGSkills = {
   font: {
-    name: "exact-font-ocr-edit",
-    sampleColor(ctx, box) {
-      const [x, y, w, h] = box;
-      const data = ctx.getImageData(Math.max(0, x), Math.max(0, y), Math.max(1, w), Math.max(1, h)).data;
-      let r = 0, g = 0, b = 0, n = 0;
-      for (let i = 0; i < data.length; i += 16) {
-        r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
-      }
-      const hex = (v) => Math.round(v / Math.max(n, 1)).toString(16).padStart(2, "0");
-      return `#${hex(r)}${hex(g)}${hex(b)}`;
-    },
     async capture(file) {
-      if (!window.Tesseract) throw new Error("OCR engine is still loading");
       const url = URL.createObjectURL(file);
       const result = await Tesseract.recognize(url, "eng");
       URL.revokeObjectURL(url);
-      return (result.data.words || [])
-        .filter((word) => word.text && word.text.trim() && word.confidence > 40)
-        .map((word, index) => ({
-          id: `ocr-${index}`,
-          type: "text",
-          text: word.text.trim(),
-          x: word.bbox.x0,
-          y: word.bbox.y0,
-          w: word.bbox.x1 - word.bbox.x0,
-          h: word.bbox.y1 - word.bbox.y0,
-          size: Math.max(12, Math.round((word.bbox.y1 - word.bbox.y0) * 0.86)),
-          weight: 600,
-          color: "#171910",
-          font: "Outfit",
-          locked: true
-        }));
+      return (result.data.words || []).filter((w) => w.text && w.confidence > 40).map((w, i) => ({
+        id: "ocr-" + i, type: "text", text: w.text.trim(), x: w.bbox.x0, y: w.bbox.y0,
+        w: w.bbox.x1 - w.bbox.x0, h: w.bbox.y1 - w.bbox.y0,
+        size: Math.max(12, Math.round((w.bbox.y1 - w.bbox.y0) * 0.86)),
+        weight: 600, color: "#171910", font: "Outfit"
+      }));
     }
   },
   photo: {
-    name: "exact-photo-swap",
     cover(img, w, h) {
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      const scale = Math.max(w / img.width, h / img.height);
-      const nw = img.width * scale;
-      const nh = img.height * scale;
-      ctx.drawImage(img, (w - nw) / 2, (h - nh) / 2, nw, nh);
-      return canvas;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const x = c.getContext("2d");
+      const s = Math.max(w / img.width, h / img.height);
+      x.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+      return c;
+    }
+  },
+  finish: {
+    upscale(source, scale) {
+      const out = document.createElement("canvas");
+      out.width = source.width * scale;
+      out.height = source.height * scale;
+      const c = out.getContext("2d");
+      c.imageSmoothingEnabled = true;
+      c.imageSmoothingQuality = "high";
+      c.drawImage(source, 0, 0, out.width, out.height);
+      const img = c.getImageData(0, 0, out.width, out.height);
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        d[i] = Math.max(0, Math.min(255, (d[i] - 128) * 1.06 + 128));
+        d[i + 1] = Math.max(0, Math.min(255, (d[i + 1] - 128) * 1.06 + 128));
+        d[i + 2] = Math.max(0, Math.min(255, (d[i + 2] - 128) * 1.06 + 128));
+      }
+      c.putImageData(img, 0, 0);
+      return out;
     }
   }
 };
